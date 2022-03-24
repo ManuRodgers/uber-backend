@@ -4,7 +4,7 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
-import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { GraphQLEmailAddress } from 'graphql-scalars';
 import { CommonEntity } from 'src/common/common.entity';
 import { Column, Entity, Unique } from 'typeorm';
@@ -32,8 +32,14 @@ export class User extends CommonEntity {
   @IsNotEmpty()
   password!: string;
 
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true })
+  @IsOptional()
+  refreshToken?: string;
+
   @Field(() => Boolean, { nullable: false })
   @Column({ nullable: false, default: false })
+  @IsNotEmpty()
   verified!: boolean;
 
   @Field(() => UserRole, { nullable: false })
