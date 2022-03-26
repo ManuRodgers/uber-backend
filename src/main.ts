@@ -17,6 +17,7 @@ async function bootstrap(): Promise<string> {
   await app.listen(process.env.PORT || 7000);
   return app.getUrl();
 }
+
 void (async (): Promise<void> => {
   try {
     const url = await bootstrap();

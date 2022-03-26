@@ -6,7 +6,10 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import * as Joi from 'joi';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -26,6 +29,10 @@ import { UserModule } from './user/user.module';
         DATABASE_USERNAME: Joi.string().required(),
         DATABASE_PASSWORD: Joi.string().required(),
         DATABASE_NAME: Joi.string().required(),
+        JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
+        JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
+        JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
       }),
       cache: true,
     }),
@@ -48,7 +55,8 @@ import { UserModule } from './user/user.module';
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       autoLoadEntities: true,
-      logging: process.env.NODE_ENV !== 'prod',
+      // logging: process.env.NODE_ENV !== 'prod',
+      logging: false,
       synchronize: process.env.NODE_ENV !== 'prod',
       applicationName: 'uber-backend',
       uuidExtension: 'pgcrypto',
@@ -58,6 +66,8 @@ import { UserModule } from './user/user.module';
       serveRoot: '/static',
     }),
     UserModule,
+    AuthModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: JwtGuard }],
 })
 export class AppModule {}

@@ -1,13 +1,15 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
   Field,
   InputType,
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
+import { hash } from 'argon2';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { GraphQLEmailAddress } from 'graphql-scalars';
 import { CommonEntity } from 'src/common/common.entity';
-import { Column, Entity, Unique } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, Unique } from 'typeorm';
 
 enum UserRole {
   CLIENT,
@@ -27,7 +29,6 @@ export class User extends CommonEntity {
   @IsNotEmpty()
   email!: string;
 
-  @Field(() => String, { nullable: false })
   @Column({ nullable: false, select: false })
   @IsNotEmpty()
   password!: string;
@@ -52,4 +53,16 @@ export class User extends CommonEntity {
   @IsNotEmpty()
   @IsEnum(UserRole)
   role!: UserRole;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hasPassword(): Promise<void> {
+    try {
+      if (this.password) {
+        this.password = await hash(this.password);
+      }
+    } catch (error) {
+      throw new InternalServerErrorException('Error hashing password');
+    }
+  }
 }

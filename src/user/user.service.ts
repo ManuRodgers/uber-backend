@@ -22,4 +22,41 @@ export class UserService {
       };
     }
   }
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    try {
+      return await this.usersRepository.findOne({
+        where: { email },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getUserById(userId: string): Promise<User | null> {
+    try {
+      return await this.usersRepository.findOne({
+        where: { id: userId },
+      });
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getPasswordByUserId(
+    userId: string,
+  ): Promise<{ user_password: string } | null> {
+    try {
+      return await this.usersRepository
+        .createQueryBuilder('user')
+        .select('user.password', 'user_password')
+        .where('user.id = :userId', { userId })
+        .getRawOne();
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }
