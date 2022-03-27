@@ -1,5 +1,6 @@
 import { Logger as NestLogger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { ExceptionsFilter } from 'src/filters/exceptions.filter';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -14,6 +15,7 @@ async function bootstrap(): Promise<string> {
       transform: true, // transform object to DTO class
     }),
   );
+  app.useGlobalFilters(new ExceptionsFilter());
   await app.listen(process.env.PORT || 7000);
   return app.getUrl();
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UsersOutput } from 'src/user/dto/users.dto';
-import { User } from 'src/user/user.entity';
+import { UsersOutput } from 'src/modules/user/dto/users.dto';
+import { User } from 'src/modules/user/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -52,6 +52,21 @@ export class UserService {
       return await this.usersRepository
         .createQueryBuilder('user')
         .select('user.password', 'user_password')
+        .where('user.id = :userId', { userId })
+        .getRawOne();
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getRefreshTokenByUserId(
+    userId: string,
+  ): Promise<{ user_refreshToken: string } | null> {
+    try {
+      return await this.usersRepository
+        .createQueryBuilder('user')
+        .select('user.refreshToken', 'user_refreshToken')
         .where('user.id = :userId', { userId })
         .getRawOne();
     } catch (error) {

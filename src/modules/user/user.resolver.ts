@@ -1,9 +1,9 @@
 import { Context, Query, Resolver } from '@nestjs/graphql';
-import { CurrentRefreshToken } from 'src/auth/decorators/current-refresh-token.decorator';
-import { CurrentUserId } from 'src/auth/decorators/current-user-id.decorator';
-import { UsersOutput } from 'src/user/dto/users.dto';
-import { User } from 'src/user/user.entity';
-import { UserService } from './user.service';
+import { CurrentRefreshToken } from 'src/modules/auth/decorators/current-refresh-token.decorator';
+import { CurrentUserId } from 'src/modules/auth/decorators/current-user-id.decorator';
+import { UsersOutput } from 'src/modules/user/dto/users.dto';
+import { User } from 'src/modules/user/user.entity';
+import { UserService } from 'src/modules/user/user.service';
 
 @Resolver(() => User)
 export class UserResolver {

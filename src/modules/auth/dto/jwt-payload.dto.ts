@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType, PickType } from '@nestjs/graphql';
-import { User } from 'src/user/user.entity';
+import { User } from 'src/modules/user/user.entity';
 
 @ObjectType()
 export class JwtPayload extends PickType(User, ['email'] as const) {

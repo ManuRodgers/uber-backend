@@ -6,7 +6,14 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { hash } from 'argon2';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { GraphQLEmailAddress } from 'graphql-scalars';
 import { CommonEntity } from 'src/common/common.entity';
 import { BeforeInsert, BeforeUpdate, Column, Entity, Unique } from 'typeorm';
@@ -26,21 +33,20 @@ export class User extends CommonEntity {
   @Field(() => GraphQLEmailAddress, { nullable: false })
   @Column({ nullable: false })
   @IsEmail()
-  @IsNotEmpty()
   email!: string;
 
   @Column({ nullable: false, select: false })
-  @IsNotEmpty()
+  @IsString()
   password!: string;
 
-  @Field(() => String, { nullable: true })
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   @IsOptional()
+  @IsString()
   refreshToken?: string;
 
   @Field(() => Boolean, { nullable: false })
   @Column({ nullable: false, default: false })
-  @IsNotEmpty()
+  @IsBoolean()
   verified!: boolean;
 
   @Field(() => UserRole, { nullable: false })

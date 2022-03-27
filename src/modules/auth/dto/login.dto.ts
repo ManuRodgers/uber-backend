@@ -1,15 +1,15 @@
 import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
 import { CommonResponse } from 'src/common/CommonReponse';
-import { User } from 'src/user/user.entity';
+import { User } from 'src/modules/user/user.entity';
 
 @InputType()
-export class RegisterInput extends PickType(User, ['email'] as const) {
+export class LoginInput extends PickType(User, ['email'] as const) {
   @Field(() => String, { nullable: false })
   password!: string;
 }
 
 @ObjectType()
-export class RegisterOutput extends CommonResponse {
+export class LoginOutput extends CommonResponse {
   @Field(() => String, { nullable: true })
   accessToken?: string;
 

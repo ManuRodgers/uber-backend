@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
-import { join } from 'path';
-import { ConfigModule } from '@nestjs/config';
-import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import * as Joi from 'joi';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { GraphQLModule } from '@nestjs/graphql';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
+import * as Joi from 'joi';
+import { join } from 'path';
+import { AuthModule } from 'src/modules/auth/auth.module';
+import { JwtGuard } from 'src/modules/auth/guards/jwt.guard';
+import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
   imports: [
@@ -68,6 +68,9 @@ import { APP_GUARD } from '@nestjs/core';
     UserModule,
     AuthModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: JwtGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: JwtGuard },
+    // { provide: APP_FILTER, useClass: ExceptionsFilter },
+  ],
 })
 export class AppModule {}

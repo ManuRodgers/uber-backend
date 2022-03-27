@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { JwtPayload } from 'src/auth/dto/jwt-payload.dto';
+import { JwtPayload } from 'src/modules/auth/dto/jwt-payload.dto';
 
 @ObjectType()
 export class RefreshTokenPayload extends JwtPayload {

@@ -69,7 +69,6 @@ type User {
   deletedAt: DateTime
   email: EmailAddress!
   id: UUID!
-  refreshToken: String
   role: UserRole!
   updatedAt: DateTime!
   verified: Boolean!

@@ -7,13 +7,16 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hash, verify } from 'argon2';
-import { JwtPayload } from 'src/auth/dto/jwt-payload.dto';
-import { LoginInput, LoginOutput } from 'src/auth/dto/login.dto';
-import { LogoutOutPut } from 'src/auth/dto/logout.dto';
-import { RefreshOutput } from 'src/auth/dto/refresh.dto';
-import { RegisterInput, RegisterOutput } from 'src/auth/dto/register.dto';
-import { User } from 'src/user/user.entity';
-import { UserService } from 'src/user/user.service';
+import { JwtPayload } from 'src/modules/auth/dto/jwt-payload.dto';
+import { LoginInput, LoginOutput } from 'src/modules/auth/dto/login.dto';
+import { LogoutOutPut } from 'src/modules/auth/dto/logout.dto';
+import { RefreshOutput } from 'src/modules/auth/dto/refresh.dto';
+import {
+  RegisterInput,
+  RegisterOutput,
+} from 'src/modules/auth/dto/register.dto';
+import { User } from 'src/modules/user/user.entity';
+import { UserService } from 'src/modules/user/user.service';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -87,15 +90,16 @@ export class AuthService {
     try {
       //  1. Check if user exists
       const user = await this.userService.getUserById(userId);
-      if (!user || !user.refreshToken) {
+      const { user_refreshToken } =
+        await this.userService.getRefreshTokenByUserId(userId);
+      if (!user || !user_refreshToken) {
         throw new ForbiddenException('Access denied');
       }
       // 2. Check if refresh token is correct
-      const isRefreshTokenCorrect = await this.compareRefreshToken(
-        user.id,
+      const isRefreshTokenCorrect = await AuthService.compareRefreshToken(
+        user_refreshToken,
         refreshToken,
       );
-      console.log('-> isRefreshTokenCorrect', isRefreshTokenCorrect);
       if (!isRefreshTokenCorrect) {
         throw new Error('Wrong Refresh Token');
       }
@@ -177,11 +181,10 @@ export class AuthService {
     return verify(user_password, password);
   }
 
-  private async compareRefreshToken(
-    userId: string,
+  private static async compareRefreshToken(
+    user_refreshToken: string,
     refreshToken: string,
   ): Promise<boolean> {
-    const user = await this.userService.getUserById(userId);
-    return verify(user.refreshToken, refreshToken);
+    return verify(user_refreshToken, refreshToken);
   }
 }
