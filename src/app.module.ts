@@ -9,6 +9,8 @@ import * as Joi from 'joi';
 import { join } from 'path';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { JwtGuard } from 'src/modules/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
+import { RestaurantModule } from 'src/modules/restaurant/restaurant.module';
 import { UserModule } from 'src/modules/user/user.module';
 
 @Module({
@@ -42,7 +44,7 @@ import { UserModule } from 'src/modules/user/user.module';
       debug: false,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      context: ({ req }) => ({ user: req.user }), // context is passed or called to resolvers automatically for every request
+      // context: ({ req }) => ({ user: req.user }), // context is passed or called to resolvers automatically for every request
       subscriptions: {
         'graphql-ws': true,
       },
@@ -67,9 +69,11 @@ import { UserModule } from 'src/modules/user/user.module';
     }),
     UserModule,
     AuthModule,
+    RestaurantModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
     // { provide: APP_FILTER, useClass: ExceptionsFilter },
   ],
 })

@@ -19,5 +19,5 @@
     "titleBar.inactiveForeground": "#e7e7e799"
   },
   "peacock.color": "#8f0bfe",
-  "cSpell.words": ["typeorm"]
+  "cSpell.words": ["pgcrypto", "typeorm"]
 }

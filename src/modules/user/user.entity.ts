@@ -16,33 +16,28 @@ import {
 } from 'class-validator';
 import { GraphQLEmailAddress } from 'graphql-scalars';
 import { CommonEntity } from 'src/common/common.entity';
-import { BeforeInsert, BeforeUpdate, Column, Entity, Unique } from 'typeorm';
+import { Restaurant } from 'src/modules/restaurant/entities/restaurant.entity';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 
-enum UserRole {
-  CLIENT,
-  OWNER,
-  DELIVERY,
+export enum UserRole {
+  CLIENT = 'CLIENT',
+  OWNER = 'OWNER',
+  DELIVERY = 'DELIVERY',
 }
 registerEnumType(UserRole, { name: 'UserRole' });
 
 @InputType({ isAbstract: true })
 @ObjectType()
 @Entity({ name: 'users' })
-@Unique(['email'])
 export class User extends CommonEntity {
   @Field(() => GraphQLEmailAddress, { nullable: false })
-  @Column({ nullable: false })
+  @Column({ nullable: false, unique: true })
   @IsEmail()
   email!: string;
 
   @Column({ nullable: false, select: false })
   @IsString()
   password!: string;
-
-  @Column({ nullable: true, select: false })
-  @IsOptional()
-  @IsString()
-  refreshToken?: string;
 
   @Field(() => Boolean, { nullable: false })
   @Column({ nullable: false, default: false })
@@ -59,6 +54,18 @@ export class User extends CommonEntity {
   @IsNotEmpty()
   @IsEnum(UserRole)
   role!: UserRole;
+
+  @Column({ nullable: true, select: false })
+  @IsOptional()
+  @IsString()
+  refreshToken?: string;
+
+  @Field(() => [Restaurant], { nullable: true })
+  @OneToMany(() => Restaurant, (restaurant) => restaurant.owner, {
+    nullable: true,
+    cascade: true,
+  })
+  restaurants?: Restaurant[];
 
   @BeforeInsert()
   @BeforeUpdate()

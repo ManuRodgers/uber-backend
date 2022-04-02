@@ -1,8 +1,9 @@
 import { ForbiddenException, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
-import { CurrentRefreshToken } from 'src/modules/auth/decorators/current-refresh-token.decorator';
-import { CurrentUserId } from 'src/modules/auth/decorators/current-user-id.decorator';
-import { Public } from 'src/modules/auth/decorators/public.decorator';
+import { CurrentRefreshToken } from 'src/decorators/current-refresh-token.decorator';
+import { CurrentUserId } from 'src/decorators/current-user-id.decorator';
+import { Public } from 'src/decorators/public.decorator';
+import { Roles } from 'src/decorators/role.decorator';
 import { LoginInput, LoginOutput } from 'src/modules/auth/dto/login.dto';
 import { LogoutOutPut } from 'src/modules/auth/dto/logout.dto';
 import { RefreshOutput } from 'src/modules/auth/dto/refresh.dto';
@@ -45,6 +46,7 @@ export class AuthResolver {
   }
 
   @Mutation(() => LogoutOutPut)
+  @Roles(['ANY'])
   async logout(@CurrentUserId() userId: string): Promise<LogoutOutPut> {
     return await this.authService.logout(userId);
   }
