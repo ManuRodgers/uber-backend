@@ -1,8 +1,9 @@
 import { Field, InputType, ObjectType, PartialType } from '@nestjs/graphql';
 import { GraphQLUUID } from 'graphql-scalars';
-import { CommonResponse } from 'src/common/CommonResponse';
-import { CreateRestaurantInput } from 'src/modules/restaurant/dto/create-restaurant.dto';
-import { Restaurant } from 'src/modules/restaurant/entities/restaurant.entity';
+import {
+  CreateRestaurantInput,
+  CreateRestaurantOutput,
+} from 'src/modules/restaurant/dto/create-restaurant.dto';
 
 @InputType()
 export class UpdateRestaurantInput extends PartialType(CreateRestaurantInput) {
@@ -11,9 +12,4 @@ export class UpdateRestaurantInput extends PartialType(CreateRestaurantInput) {
 }
 
 @ObjectType()
-export class UpdateRestaurantOutput extends CommonResponse {
-  @Field(() => Restaurant, {
-    nullable: true,
-  })
-  restaurant?: Restaurant;
-}
+export class UpdateRestaurantOutput extends CreateRestaurantOutput {}

@@ -35,6 +35,21 @@ type CategoryOutput {
   totalResults: Int
 }
 
+input CreateDishInput {
+  description: String!
+  name: String!
+  options: [DishOptionInputType!]
+  photo: String!
+  price: Int!
+  restaurantId: UUID!
+}
+
+type CreateDishOutput {
+  dish: Dish
+  error: String
+  ok: Boolean!
+}
+
 input CreateRestaurantInput {
   address: String!
   categoryName: String!
@@ -53,6 +68,16 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input DeleteDishInput {
+  dishId: UUID!
+}
+
+type DeleteDishOutput {
+  dish: Dish
+  error: String
+  ok: Boolean!
+}
+
 input DeleteRestaurantInput {
   restaurantId: UUID!
 }
@@ -61,6 +86,41 @@ type DeleteRestaurantOutput {
   error: String
   ok: Boolean!
   restaurant: Restaurant
+}
+
+type Dish {
+  createdAt: DateTime!
+  deletedAt: DateTime
+  description: String!
+  id: UUID!
+  name: String!
+  options: [DishOption!]
+  photo: String!
+  price: Int!
+  restaurant: Restaurant!
+  updatedAt: DateTime!
+}
+
+type DishChoice {
+  extra: Int
+  name: String!
+}
+
+input DishChoiceInputType {
+  extra: Int
+  name: String!
+}
+
+type DishOption {
+  choices: [DishChoice!]
+  extra: Int
+  name: String!
+}
+
+input DishOptionInputType {
+  choices: [DishChoiceInputType!]
+  extra: Int
+  name: String!
 }
 
 """
@@ -86,12 +146,15 @@ type LogoutOutPut {
 }
 
 type Mutation {
+  createDish(createDishInput: CreateDishInput!): CreateDishOutput!
   createRestaurant(createRestaurantInput: CreateRestaurantInput!): CreateRestaurantOutput!
+  deleteDish(deleteDishInput: DeleteDishInput!): DeleteDishOutput!
   deleteRestaurant(deleteRestaurantInput: DeleteRestaurantInput!): DeleteRestaurantOutput!
   login(loginInput: LoginInput!): LoginOutput!
   logout: LogoutOutPut!
   refresh: RefreshOutput!
   register(registerInput: RegisterInput!): RegisterOutput!
+  updateDish(updateDishInput: UpdateDishInput!): UpdateDishOutput!
   updateRestaurant(updateRestaurantInput: UpdateRestaurantInput!): UpdateRestaurantOutput!
 }
 
@@ -148,8 +211,11 @@ type Restaurant {
   createdAt: DateTime!
   deletedAt: DateTime
   id: UUID!
+  isPromoted: Boolean!
+  menu: [Dish!]!
   name: String!
   owner: User!
+  promotedUntil: DateTime
   updatedAt: DateTime!
 }
 
@@ -194,6 +260,22 @@ type SearchRestaurantOutput {
 A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier.
 """
 scalar UUID
+
+input UpdateDishInput {
+  description: String
+  dishId: UUID!
+  name: String
+  options: [DishOptionInputType!]
+  photo: String
+  price: Int
+  restaurantId: UUID
+}
+
+type UpdateDishOutput {
+  dish: Dish
+  error: String
+  ok: Boolean!
+}
 
 input UpdateRestaurantInput {
   address: String

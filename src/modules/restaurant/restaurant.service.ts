@@ -1,43 +1,35 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CategoriesOutput } from 'src/modules/restaurant/dto/categories.dto';
-import {
-  CategoryInput,
-  CategoryOutput,
-} from 'src/modules/restaurant/dto/category.dto';
-import {
-  DeleteRestaurantInput,
-  DeleteRestaurantOutput,
-} from 'src/modules/restaurant/dto/delete-restaurant.dto';
-import {
-  MyRestaurantInput,
-  MyRestaurantOutput,
-} from 'src/modules/restaurant/dto/my-restaurant.dto';
-import { MyRestaurantsOutput } from 'src/modules/restaurant/dto/my-restaurants.dto';
-import {
-  RestaurantInput,
-  RestaurantOutput,
-} from 'src/modules/restaurant/dto/restaurant.dto';
-import {
-  RestaurantsInput,
-  RestaurantsOutput,
-} from 'src/modules/restaurant/dto/restaurants.dto';
-import {
-  SearchRestaurantInput,
-  SearchRestaurantOutput,
-} from 'src/modules/restaurant/dto/search-restaurant.dto';
-import {
-  UpdateRestaurantInput,
-  UpdateRestaurantOutput,
-} from 'src/modules/restaurant/dto/update-restaurant.dto';
-import { Category } from 'src/modules/restaurant/entities/category.entity';
 import { Like, Repository } from 'typeorm';
 
 import { UserService } from '../user/user.service';
+import { CategoriesOutput } from './dto/categories.dto';
+import { CategoryInput, CategoryOutput } from './dto/category.dto';
+import { CreateDishInput, CreateDishOutput } from './dto/create-dish.dto';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
 } from './dto/create-restaurant.dto';
+import { DeleteDishInput, DeleteDishOutput } from './dto/delete-dish.dto';
+import {
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput,
+} from './dto/delete-restaurant.dto';
+import { MyRestaurantInput, MyRestaurantOutput } from './dto/my-restaurant.dto';
+import { MyRestaurantsOutput } from './dto/my-restaurants.dto';
+import { RestaurantInput, RestaurantOutput } from './dto/restaurant.dto';
+import { RestaurantsInput, RestaurantsOutput } from './dto/restaurants.dto';
+import {
+  SearchRestaurantInput,
+  SearchRestaurantOutput,
+} from './dto/search-restaurant.dto';
+import { UpdateDishInput, UpdateDishOutput } from './dto/update-dish.dto';
+import {
+  UpdateRestaurantInput,
+  UpdateRestaurantOutput,
+} from './dto/update-restaurant.dto';
+import { Category } from './entities/category.entity';
+import { Dish } from './entities/dish.entity';
 import { Restaurant } from './entities/restaurant.entity';
 
 @Injectable()
@@ -48,6 +40,8 @@ export class RestaurantService {
     private readonly restaurantRepository: Repository<Restaurant>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Dish)
+    private readonly dishRepository: Repository<Dish>,
   ) {}
 
   async createRestaurant(
@@ -93,6 +87,7 @@ export class RestaurantService {
         },
         relations: {
           category: true,
+          menu: true,
         },
       });
       if (!restaurant) {
@@ -292,6 +287,7 @@ export class RestaurantService {
           skip: (page - 1) * take,
           relations: {
             owner: true,
+            menu: true,
           },
           select: {
             id: true,
@@ -300,6 +296,11 @@ export class RestaurantService {
               id: true,
               email: true,
               role: true,
+            },
+            menu: {
+              id: true,
+              name: true,
+              price: true,
             },
           },
         });
@@ -397,6 +398,161 @@ export class RestaurantService {
       };
     } catch (error) {
       console.log(error);
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async createDish(
+    ownerId: string,
+    createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    try {
+      const restaurant = await this.restaurantRepository.findOne({
+        where: {
+          id: createDishInput.restaurantId,
+          owner: {
+            id: ownerId,
+          },
+        },
+        relations: {
+          // ?maybe performance issue
+          menu: true,
+        },
+      });
+      if (!restaurant) {
+        throw new ForbiddenException(
+          'Restaurant not found or you are not owner of this restaurant',
+        );
+      }
+      if (
+        restaurant.menu.length !== 0 &&
+        restaurant.menu.map((dish) => dish.name).includes(createDishInput.name)
+      ) {
+        throw new ForbiddenException('Dish already exists for this restaurant');
+      }
+      const dish = await this.dishRepository.save(
+        this.dishRepository.create({
+          ...createDishInput,
+          restaurant: {
+            id: restaurant.id,
+          },
+        }),
+      );
+      return {
+        ok: true,
+        dish,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async updateDish(
+    ownerId: string,
+    updateDishInput: UpdateDishInput,
+  ): Promise<UpdateDishOutput> {
+    try {
+      const dish = await this.dishRepository.findOne({
+        where: {
+          id: updateDishInput.dishId,
+          restaurant: {
+            owner: {
+              id: ownerId,
+            },
+          },
+        },
+        relations: {
+          restaurant: {
+            owner: true,
+            category: true,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          description: true,
+          restaurant: {
+            id: true,
+            name: true,
+            address: true,
+            owner: {
+              id: true,
+              email: true,
+              role: true,
+            },
+            category: {
+              id: true,
+              name: true,
+            },
+          },
+          options: true,
+        },
+      });
+      if (!dish) {
+        throw new ForbiddenException(
+          'Dish not found or you do not have permission to update',
+        );
+      }
+      const updatedDish = await this.dishRepository.save(
+        this.dishRepository.create({
+          ...dish,
+          ...updateDishInput,
+        }),
+      );
+      return {
+        ok: true,
+        dish: updatedDish,
+      };
+    } catch (error) {
+      console.error(error);
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async deleteDish(
+    ownerId: string,
+    deleteDishInput: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    try {
+      const dish = await this.dishRepository.findOne({
+        where: {
+          id: deleteDishInput.dishId,
+          restaurant: {
+            owner: {
+              id: ownerId,
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          description: true,
+        },
+      });
+      if (!dish) {
+        throw new ForbiddenException(
+          'Dish not found or you do not have permission to delete',
+        );
+      }
+      await this.dishRepository.remove(dish);
+      return {
+        ok: true,
+        dish,
+      };
+    } catch (error) {
+      console.error(error);
       return {
         ok: false,
         error,

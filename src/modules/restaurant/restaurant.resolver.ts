@@ -1,12 +1,13 @@
 import {
-  Resolver,
-  Query,
-  Mutation,
   Args,
   Int,
-  ResolveField,
+  Mutation,
   Parent,
+  Query,
+  ResolveField,
+  Resolver,
 } from '@nestjs/graphql';
+import { CurrentUserId } from 'src/decorators/current-user-id.decorator';
 import { Roles } from 'src/decorators/role.decorator';
 import { CategoriesOutput } from 'src/modules/restaurant/dto/categories.dto';
 import {
@@ -39,13 +40,17 @@ import {
   UpdateRestaurantOutput,
 } from 'src/modules/restaurant/dto/update-restaurant.dto';
 import { Category } from 'src/modules/restaurant/entities/category.entity';
-import { RestaurantService } from './restaurant.service';
-import { Restaurant } from './entities/restaurant.entity';
+
+import { CreateDishInput, CreateDishOutput } from './dto/create-dish.dto';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
 } from './dto/create-restaurant.dto';
-import { CurrentUserId } from 'src/decorators/current-user-id.decorator';
+import { DeleteDishOutput, DeleteDishInput } from './dto/delete-dish.dto';
+import { UpdateDishOutput, UpdateDishInput } from './dto/update-dish.dto';
+import { Dish } from './entities/dish.entity';
+import { Restaurant } from './entities/restaurant.entity';
+import { RestaurantService } from './restaurant.service';
 
 @Resolver(() => Restaurant)
 export class RestaurantResolver {
@@ -151,5 +156,37 @@ export class CategoryResolver {
     @Args('categoryInput') categoryInput: CategoryInput,
   ): Promise<CategoryOutput> {
     return this.restaurantService.category(categoryInput);
+  }
+}
+
+@Resolver(() => Dish)
+export class DishResolver {
+  constructor(private readonly restaurantService: RestaurantService) {}
+
+  @Mutation(() => CreateDishOutput)
+  @Roles(['OWNER'])
+  async createDish(
+    @CurrentUserId() ownerId: string,
+    @Args('createDishInput') createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    return this.restaurantService.createDish(ownerId, createDishInput);
+  }
+
+  @Mutation(() => UpdateDishOutput)
+  @Roles(['OWNER'])
+  async updateDish(
+    @CurrentUserId() ownerId: string,
+    @Args('updateDishInput') updateDishInput: UpdateDishInput,
+  ): Promise<UpdateDishOutput> {
+    return this.restaurantService.updateDish(ownerId, updateDishInput);
+  }
+
+  @Mutation(() => DeleteDishOutput)
+  @Roles(['OWNER'])
+  async deleteDish(
+    @CurrentUserId() ownerId: string,
+    @Args('deleteDishInput') deleteDishInput: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    return this.restaurantService.deleteDish(ownerId, deleteDishInput);
   }
 }
