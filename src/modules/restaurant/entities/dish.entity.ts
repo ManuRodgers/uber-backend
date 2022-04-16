@@ -1,32 +1,13 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { IsNumber, IsString, Length } from 'class-validator';
 import { CommonEntity } from 'src/common/common.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Order } from 'src/modules/order/entities/order.entity';
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import { DishOption } from './dish-option.entity';
 
 import { Restaurant } from './restaurant.entity';
 
-@InputType('DishChoiceInputType', { isAbstract: true })
-@ObjectType()
-export class DishChoice {
-  @Field(() => String, { nullable: false })
-  name!: string;
-
-  @Field(() => Int, { nullable: true })
-  extra?: number;
-}
-@InputType('DishOptionInputType', { isAbstract: true })
-@ObjectType()
-export class DishOption {
-  @Field(() => String, { nullable: false })
-  name!: string;
-
-  @Field(() => [DishChoice], { nullable: true })
-  choices?: DishChoice[];
-
-  @Field(() => Int, { nullable: true })
-  extra?: number;
-}
-@InputType({ isAbstract: true })
+@InputType('DishInputType', { isAbstract: true })
 @ObjectType()
 @Entity({ name: 'dishes' })
 export class Dish extends CommonEntity {
@@ -60,6 +41,16 @@ export class Dish extends CommonEntity {
   restaurant!: Restaurant;
 
   @Field(() => [DishOption], { nullable: true })
-  @Column({ type: 'json', nullable: true })
+  @OneToMany(() => DishOption, (dishOption) => dishOption.dish, {
+    nullable: true,
+    cascade: true,
+    eager: true,
+  })
   options?: DishOption[];
+
+  // @Field(() => [Order], { nullable: true })
+  // @ManyToMany(() => Order, (order) => order.dishes, {
+  //   nullable: true,
+  // })
+  // orders: Order[];
 }

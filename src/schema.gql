@@ -26,6 +26,13 @@ input CategoryInput {
   take: Int = 25
 }
 
+input CategoryInputType {
+  coverImage: String
+  name: String!
+  restaurants: [RestaurantInputType!]
+  slug: String!
+}
+
 type CategoryOutput {
   category: Category
   error: String
@@ -48,6 +55,22 @@ type CreateDishOutput {
   dish: Dish
   error: String
   ok: Boolean!
+}
+
+input CreateOrderInput {
+  createOrderInputItems: [CreateOrderInputItem!]!
+  restaurantId: UUID!
+}
+
+input CreateOrderInputItem {
+  dishId: UUID!
+  dishOptionIds: [UUID!]
+}
+
+type CreateOrderOutput {
+  error: String
+  ok: Boolean!
+  order: Order
 }
 
 input CreateRestaurantInput {
@@ -101,25 +124,28 @@ type Dish {
   updatedAt: DateTime!
 }
 
-type DishChoice {
-  extra: Int
+input DishInputType {
+  description: String!
   name: String!
-}
-
-input DishChoiceInputType {
-  extra: Int
-  name: String!
+  options: [DishOptionInputType!]
+  photo: String!
+  price: Int!
+  restaurant: RestaurantInputType!
 }
 
 type DishOption {
-  choices: [DishChoice!]
+  createdAt: DateTime!
+  deletedAt: DateTime
+  dish: Dish
   extra: Int
+  id: UUID!
   name: String!
+  updatedAt: DateTime!
 }
 
 input DishOptionInputType {
-  choices: [DishChoiceInputType!]
-  extra: Int
+  dish: DishInputType
+  extra: Int = 0
   name: String!
 }
 
@@ -147,6 +173,7 @@ type LogoutOutPut {
 
 type Mutation {
   createDish(createDishInput: CreateDishInput!): CreateDishOutput!
+  createOrder(createOrderInput: CreateOrderInput!): CreateOrderOutput!
   createRestaurant(createRestaurantInput: CreateRestaurantInput!): CreateRestaurantOutput!
   deleteDish(deleteDishInput: DeleteDishInput!): DeleteDishOutput!
   deleteRestaurant(deleteRestaurantInput: DeleteRestaurantInput!): DeleteRestaurantOutput!
@@ -155,6 +182,7 @@ type Mutation {
   refresh: RefreshOutput!
   register(registerInput: RegisterInput!): RegisterOutput!
   updateDish(updateDishInput: UpdateDishInput!): UpdateDishOutput!
+  updateOrder(updateOrderInput: UpdateOrderInput!): UpdateOrderOutput!
   updateRestaurant(updateRestaurantInput: UpdateRestaurantInput!): UpdateRestaurantOutput!
 }
 
@@ -174,11 +202,68 @@ type MyRestaurantsOutput {
   restaurants: [Restaurant!]
 }
 
+type Order {
+  createdAt: DateTime!
+  customer: User
+  deletedAt: DateTime
+  dishes: [Dish!]
+  driver: User
+  id: UUID!
+  restaurant: Restaurant
+  status: OrderStatus!
+  total: Int
+  updatedAt: DateTime!
+}
+
+input OrderInput {
+  id: UUID!
+}
+
+input OrderInputType {
+  customer: UserInputType
+  dishes: [DishInputType!]
+  driver: UserInputType
+  restaurant: RestaurantInputType
+  status: OrderStatus!
+  total: Int
+}
+
+type OrderOutput {
+  error: String
+  ok: Boolean!
+  order: Order
+}
+
+enum OrderStatus {
+  COOKED
+  COOKING
+  DELIVERED
+  PENDING
+  PICKEDUP
+}
+
+input OrdersInput {
+  status: OrderStatus
+}
+
+type OrdersOutput {
+  error: String
+  ok: Boolean!
+  orders: [Order!]
+}
+
+type PendingOrderOutPut {
+  order: Order
+  ownerId: String
+}
+
 type Query {
   categories: CategoriesOutput!
   category(categoryInput: CategoryInput!): CategoryOutput!
   myRestaurant(myRestaurantInput: MyRestaurantInput!): MyRestaurantOutput!
   myRestaurants: MyRestaurantsOutput!
+  order(orderInput: OrderInput!): OrderOutput!
+  orders(ordersInput: OrdersInput!): OrdersOutput!
   restaurant(restaurantInput: RestaurantInput!): RestaurantOutput!
   restaurants(restaurantsInput: RestaurantsInput!): RestaurantsOutput!
   searchRestaurant(searchRestaurantInput: SearchRestaurantInput!): SearchRestaurantOutput!
@@ -214,6 +299,7 @@ type Restaurant {
   isPromoted: Boolean!
   menu: [Dish!]!
   name: String!
+  orders: [Order!]
   owner: User!
   promotedUntil: DateTime
   updatedAt: DateTime!
@@ -221,6 +307,18 @@ type Restaurant {
 
 input RestaurantInput {
   restaurantId: UUID!
+}
+
+input RestaurantInputType {
+  address: String!
+  category: CategoryInputType
+  coverImage: String!
+  isPromoted: Boolean = false
+  menu: [DishInputType!]!
+  name: String!
+  orders: [OrderInputType!]
+  owner: UserInputType!
+  promotedUntil: DateTime
 }
 
 type RestaurantOutput {
@@ -256,6 +354,10 @@ type SearchRestaurantOutput {
   totalResults: Int
 }
 
+type Subscription {
+  pendingOrders: PendingOrderOutPut!
+}
+
 """
 A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier.
 """
@@ -277,6 +379,17 @@ type UpdateDishOutput {
   ok: Boolean!
 }
 
+input UpdateOrderInput {
+  id: UUID!
+  status: OrderStatus!
+}
+
+type UpdateOrderOutput {
+  error: String
+  ok: Boolean!
+  order: Order
+}
+
 input UpdateRestaurantInput {
   address: String
   categoryName: String
@@ -296,9 +409,20 @@ type User {
   deletedAt: DateTime
   email: EmailAddress!
   id: UUID!
+  orders: [Order!]
   restaurants: [Restaurant!]
+  rides: [Order!]
   role: UserRole!
   updatedAt: DateTime!
+  verified: Boolean!
+}
+
+input UserInputType {
+  email: EmailAddress!
+  orders: [OrderInputType!]
+  restaurants: [RestaurantInputType!]
+  rides: [OrderInputType!]
+  role: UserRole!
   verified: Boolean!
 }
 

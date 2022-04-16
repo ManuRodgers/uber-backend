@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@casl/ability": "^5.4.3",
+    "@liaoliaots/nestjs-redis": "^8.0.0",
     "@nestjs-modules/mailer": "^1.6.1",
     "@nestjs/apollo": "^10.0.7",
     "@nestjs/common": "^8.0.0",
@@ -39,11 +40,12 @@
     "class-validator": "^0.13.2",
     "concurrently": "^7.0.0",
     "graphql": "^16.3.0",
+    "graphql-redis-subscriptions": "^2.4.2",
     "graphql-scalars": "^1.14.1",
-    "graphql-subscriptions": "^2.0.0",
     "graphql-upload": "^13.0.0",
-    "graphql-ws": "^5.5.5",
+    "graphql-ws": "^5.7.0",
     "handlebars": "^4.7.7",
+    "ioredis": "^5.0.4",
     "joi": "^17.6.0",
     "nodemailer": "^6.7.2",
     "passport": "^0.5.2",
@@ -52,7 +54,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
-    "typeorm": "^0.3.3"
+    "typeorm": "^0.3.6"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

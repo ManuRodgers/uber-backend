@@ -18,6 +18,7 @@ import { GraphQLEmailAddress } from 'graphql-scalars';
 import { CommonEntity } from 'src/common/common.entity';
 import { Restaurant } from 'src/modules/restaurant/entities/restaurant.entity';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
+import { Order } from '../order/entities/order.entity';
 
 export enum UserRole {
   CLIENT = 'CLIENT',
@@ -26,7 +27,7 @@ export enum UserRole {
 }
 registerEnumType(UserRole, { name: 'UserRole' });
 
-@InputType({ isAbstract: true })
+@InputType('UserInputType', { isAbstract: true })
 @ObjectType()
 @Entity({ name: 'users' })
 export class User extends CommonEntity {
@@ -66,6 +67,20 @@ export class User extends CommonEntity {
     cascade: true,
   })
   restaurants?: Restaurant[];
+
+  // being customer
+  @Field(() => [Order], { nullable: true })
+  @OneToMany(() => Order, (order) => order.customer, {
+    nullable: true,
+  })
+  orders?: Order[];
+
+  // being driver
+  @Field(() => [Order], { nullable: true })
+  @OneToMany(() => Order, (order) => order.driver, {
+    nullable: true,
+  })
+  rides?: Order[];
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -1,13 +1,14 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsString } from 'class-validator';
+import { IsString, IsUUID } from 'class-validator';
 import { CommonEntity } from 'src/common/common.entity';
+import { Order } from 'src/modules/order/entities/order.entity';
 import { User } from 'src/modules/user/user.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, RelationId } from 'typeorm';
 
 import { Category } from './category.entity';
 import { Dish } from './dish.entity';
 
-@InputType({ isAbstract: true })
+@InputType('RestaurantInputType', { isAbstract: true })
 @ObjectType()
 @Entity({ name: 'restaurants' })
 export class Restaurant extends CommonEntity {
@@ -38,8 +39,13 @@ export class Restaurant extends CommonEntity {
   @ManyToOne(() => User, (user) => user.restaurants, {
     nullable: false,
     onDelete: 'CASCADE',
+    eager: true,
   })
   owner!: User;
+
+  @RelationId((restaurant: Restaurant) => restaurant.owner)
+  @IsUUID()
+  ownerId!: string;
 
   @Field(() => [Dish], { nullable: false })
   @OneToMany(() => Dish, (dish) => dish.restaurant, {
@@ -54,4 +60,10 @@ export class Restaurant extends CommonEntity {
     onDelete: 'SET NULL',
   })
   category?: Category;
+
+  @Field(() => [Order], { nullable: true })
+  @OneToMany(() => Order, (order) => order.restaurant, {
+    nullable: true,
+  })
+  orders?: Order[];
 }

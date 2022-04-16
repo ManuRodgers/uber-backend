@@ -1,11 +1,10 @@
-import { Field, ObjectType } from '@nestjs/graphql';
-import { InputType } from '@nestjs/graphql/dist/extra/graphql-model-shim';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { CommonEntity } from 'src/common/common.entity';
 import { Restaurant } from 'src/modules/restaurant/entities/restaurant.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 
-@InputType({ isAbstract: true })
+@InputType('CategoryInputType', { isAbstract: true })
 @ObjectType()
 @Entity({ name: 'categories' })
 export class Category extends CommonEntity {

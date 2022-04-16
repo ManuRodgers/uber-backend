@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { IsNull, Like, Repository } from 'typeorm';
 
 import { UserService } from '../user/user.service';
 import { CategoriesOutput } from './dto/categories.dto';
@@ -29,6 +29,7 @@ import {
   UpdateRestaurantOutput,
 } from './dto/update-restaurant.dto';
 import { Category } from './entities/category.entity';
+import { DishOption } from './entities/dish-option.entity';
 import { Dish } from './entities/dish.entity';
 import { Restaurant } from './entities/restaurant.entity';
 
@@ -42,6 +43,8 @@ export class RestaurantService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Dish)
     private readonly dishRepository: Repository<Dish>,
+    @InjectRepository(DishOption)
+    private readonly dishOptionRepository: Repository<DishOption>,
   ) {}
 
   async createRestaurant(
@@ -439,6 +442,10 @@ export class RestaurantService {
           restaurant: {
             id: restaurant.id,
           },
+          options:
+            createDishInput.options && createDishInput.options.length > 0
+              ? createDishInput.options
+              : [],
         }),
       );
       return {
@@ -473,6 +480,7 @@ export class RestaurantService {
             owner: true,
             category: true,
           },
+          options: true,
         },
         select: {
           id: true,
@@ -525,6 +533,7 @@ export class RestaurantService {
     deleteDishInput: DeleteDishInput,
   ): Promise<DeleteDishOutput> {
     try {
+      await this.deleteNullDishOptions();
       const dish = await this.dishRepository.findOne({
         where: {
           id: deleteDishInput.dishId,
@@ -541,6 +550,10 @@ export class RestaurantService {
           description: true,
         },
       });
+      console.log(
+        '🚀 ~ file: restaurant.service.ts ~ line 556 ~ RestaurantService ~ dish',
+        dish,
+      );
       if (!dish) {
         throw new ForbiddenException(
           'Dish not found or you do not have permission to delete',
@@ -577,5 +590,16 @@ export class RestaurantService {
       );
     }
     return newCategory || existingCategory;
+  }
+
+  private async deleteNullDishOptions(): Promise<void> {
+    const dishOptions = await this.dishOptionRepository.find({
+      where: {
+        dish: IsNull(),
+      },
+    });
+    for (const dishOption of dishOptions) {
+      await this.dishOptionRepository.remove(dishOption);
+    }
   }
 }

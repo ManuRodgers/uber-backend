@@ -27,6 +27,7 @@ module.exports = {
     'require-await': 'off',
     '@typescript-eslint/require-await': 'off',
     '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-namespace': [2, { allowDeclarations: true }],
   },
   settings: {
     'import/resolver': {
