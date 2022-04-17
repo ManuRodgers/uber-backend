@@ -18,6 +18,10 @@ import {
 } from './dto/create-order.dto';
 import { OrderInput, OrderOutput } from './dto/order.dto';
 import { OrdersInput, OrdersOutput } from './dto/orders.dto';
+import {
+  PendingOrdersOutPut,
+  PendingOrdersPayload,
+} from './dto/pending-orders.dto';
 import { UpdateOrderInput, UpdateOrderOutput } from './dto/update-order.dto';
 import { Order, OrderStatus } from './entities/order.entity';
 
@@ -164,8 +168,15 @@ export class OrderService {
           total,
         }),
       );
-      await this.pubSub.publish(PENDING_ORDERS, {
-        [PENDING_ORDERS]: { order, ownerId: restaurant.ownerId },
+      console.log(
+        '🚀 ~ file: order.service.ts ~ line 171 ~ OrderService ~ order',
+        order,
+      );
+      await this.pubSub.publish<PendingOrdersPayload>(PENDING_ORDERS, {
+        [PENDING_ORDERS]: {
+          ownerId: restaurant.ownerId,
+          order,
+        },
       });
       return {
         ok: true,

@@ -1,15 +1,24 @@
 import { Inject } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Query,
+  Resolver,
+  Subscription,
+  GqlContextType,
+} from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CurrentUserId } from 'src/decorators/current-user-id.decorator';
-import { Public } from 'src/decorators/public.decorator';
 import { Roles } from 'src/decorators/role.decorator';
 
 import { PENDING_ORDERS, PUB_SUB } from '../pub-sub/pub-sub.constants';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { OrderInput, OrderOutput } from './dto/order.dto';
 import { OrdersInput, OrdersOutput } from './dto/orders.dto';
-import { PendingOrderOutPut } from './dto/pending-orders.dto';
+import {
+  PendingOrdersOutPut,
+  PendingOrdersPayload,
+} from './dto/pending-orders.dto';
 import { UpdateOrderInput, UpdateOrderOutput } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
 import { OrderService } from './order.service';
@@ -48,8 +57,14 @@ export class OrderResolver {
     return this.orderService.createOrder(customerId, createOrderInput);
   }
 
-  @Subscription(() => PendingOrderOutPut, {
+  @Subscription(() => PendingOrdersOutPut, {
     name: PENDING_ORDERS,
+    filter(payload: PendingOrdersPayload, _, context): boolean {
+      return payload.pendingOrders.ownerId === context.req.user.sub;
+    },
+    resolve({ pendingOrders }: PendingOrdersPayload): PendingOrdersOutPut {
+      return pendingOrders;
+    },
   })
   @Roles(['OWNER'])
   pendingOrders() {

@@ -252,7 +252,7 @@ type OrdersOutput {
   orders: [Order!]
 }
 
-type PendingOrderOutPut {
+type PendingOrdersOutPut {
   order: Order
   ownerId: String
 }
@@ -355,7 +355,7 @@ type SearchRestaurantOutput {
 }
 
 type Subscription {
-  pendingOrders: PendingOrderOutPut!
+  pendingOrders: PendingOrdersOutPut!
 }
 
 """
