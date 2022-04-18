@@ -5,12 +5,20 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 // eslint-disable-next-line import/no-named-as-default
 import Redis from 'ioredis';
 import { In, Repository } from 'typeorm';
-import { PUB_SUB, PENDING_ORDERS } from '../pub-sub/pub-sub.constants';
+import {
+  PUB_SUB,
+  PENDING_ORDERS,
+  COOKED_ORDERS,
+} from '../pub-sub/pub-sub.constants';
 
 import { Dish } from '../restaurant/entities/dish.entity';
 import { Restaurant } from '../restaurant/entities/restaurant.entity';
 import { User, UserRole } from '../user/user.entity';
 import { UserService } from '../user/user.service';
+import {
+  CookedOrdersOutput,
+  CookedOrdersPayload,
+} from './dto/cooked-orders.dto';
 import {
   CreateOrderInput,
   CreateOrderInputItem,
@@ -168,10 +176,7 @@ export class OrderService {
           total,
         }),
       );
-      console.log(
-        '🚀 ~ file: order.service.ts ~ line 171 ~ OrderService ~ order',
-        order,
-      );
+
       await this.pubSub.publish<PendingOrdersPayload>(PENDING_ORDERS, {
         [PENDING_ORDERS]: {
           ownerId: restaurant.ownerId,
@@ -196,21 +201,11 @@ export class OrderService {
   ): Promise<UpdateOrderOutput> {
     try {
       const user = await this.userService.getUserById(userId);
+      const order = await this.orderRepository.findOneBy({ id });
       console.log(
-        '🚀 ~ file: order.service.ts ~ line 186 ~ OrderService ~ user',
-        user,
+        '🚀 ~ file: order.service.ts ~ line 197 ~ OrderService ~ order',
+        order,
       );
-      const order = await this.orderRepository.findOne({
-        where: {
-          id,
-        },
-        relations: {
-          restaurant: true,
-          dishes: true,
-          customer: true,
-          driver: true,
-        },
-      });
       if (!order) {
         throw new Error('Order not found');
       }
@@ -219,11 +214,26 @@ export class OrderService {
           'You are not authorized to read this order',
         );
       }
-
-      if (!this.canUpdateOrder(user, order)) {
+      if (!this.canUpdateOrder(user, status)) {
         throw new UnauthorizedException(
           'You are not authorized to update this order',
         );
+      }
+      await this.orderRepository.save({
+        id,
+        status,
+      });
+      const newOrder = { ...order, status };
+      console.log(
+        '🚀 ~ file: order.service.ts ~ line 227 ~ OrderService ~ newOrder',
+        newOrder,
+      );
+      if (user.role === UserRole.OWNER && status === OrderStatus.COOKED) {
+        await this.pubSub.publish<CookedOrdersPayload>(COOKED_ORDERS, {
+          [COOKED_ORDERS]: {
+            order: newOrder,
+          },
+        });
       }
       return {
         ok: true,
@@ -248,17 +258,13 @@ export class OrderService {
     return false;
   }
 
-  private canUpdateOrder(user: User, order: Order): boolean {
+  private canUpdateOrder(user: User, status: OrderStatus): boolean {
     if (user.role === UserRole.DELIVERY) {
       return (
-        order.status === OrderStatus.DELIVERED ||
-        order.status === OrderStatus.PICKEDUP
+        status === OrderStatus.DELIVERED || status === OrderStatus.PICKEDUP
       );
     } else if (user.role === UserRole.OWNER) {
-      return (
-        order.status === OrderStatus.COOKING ||
-        order.status === OrderStatus.COOKED
-      );
+      return status === OrderStatus.COOKING || status === OrderStatus.COOKED;
     }
     return false;
   }

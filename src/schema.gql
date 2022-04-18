@@ -42,6 +42,10 @@ type CategoryOutput {
   totalResults: Int
 }
 
+type CookedOrdersOutput {
+  order: Order
+}
+
 input CreateDishInput {
   description: String!
   name: String!
@@ -355,6 +359,7 @@ type SearchRestaurantOutput {
 }
 
 type Subscription {
+  cookedOrders: CookedOrdersOutput!
   pendingOrders: PendingOrdersOutPut!
 }
 

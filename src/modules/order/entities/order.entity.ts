@@ -83,6 +83,7 @@ export class Order extends CommonEntity {
   @ManyToMany(() => Dish, {
     nullable: false,
     cascade: true,
+    eager: true,
   })
   @JoinTable()
   dishes!: Dish[];

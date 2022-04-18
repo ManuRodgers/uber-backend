@@ -47,10 +47,4 @@ export class Dish extends CommonEntity {
     eager: true,
   })
   options?: DishOption[];
-
-  // @Field(() => [Order], { nullable: true })
-  // @ManyToMany(() => Order, (order) => order.dishes, {
-  //   nullable: true,
-  // })
-  // orders: Order[];
 }

@@ -1,17 +1,15 @@
 import { Inject } from '@nestjs/common';
-import {
-  Args,
-  Mutation,
-  Query,
-  Resolver,
-  Subscription,
-  GqlContextType,
-} from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CurrentUserId } from 'src/decorators/current-user-id.decorator';
 import { Roles } from 'src/decorators/role.decorator';
 
-import { PENDING_ORDERS, PUB_SUB } from '../pub-sub/pub-sub.constants';
+import {
+  COOKED_ORDERS,
+  PENDING_ORDERS,
+  PUB_SUB,
+} from '../pub-sub/pub-sub.constants';
+import { CookedOrdersOutput } from './dto/cooked-orders.dto';
 import { CreateOrderInput, CreateOrderOutput } from './dto/create-order.dto';
 import { OrderInput, OrderOutput } from './dto/order.dto';
 import { OrdersInput, OrdersOutput } from './dto/orders.dto';
@@ -57,6 +55,15 @@ export class OrderResolver {
     return this.orderService.createOrder(customerId, createOrderInput);
   }
 
+  @Mutation(() => UpdateOrderOutput)
+  @Roles(['OWNER', 'DELIVERY'])
+  async updateOrder(
+    @CurrentUserId() userId: string,
+    @Args('updateOrderInput') updateOrderInput: UpdateOrderInput,
+  ): Promise<UpdateOrderOutput> {
+    return this.orderService.updateOrder(userId, updateOrderInput);
+  }
+
   @Subscription(() => PendingOrdersOutPut, {
     name: PENDING_ORDERS,
     filter(payload: PendingOrdersPayload, _, context): boolean {
@@ -71,12 +78,11 @@ export class OrderResolver {
     return this.pubSub.asyncIterator(PENDING_ORDERS);
   }
 
-  @Mutation(() => UpdateOrderOutput)
-  @Roles(['OWNER', 'DELIVERY'])
-  async updateOrder(
-    @CurrentUserId() userId: string,
-    @Args('updateOrderInput') updateOrderInput: UpdateOrderInput,
-  ): Promise<UpdateOrderOutput> {
-    return this.orderService.updateOrder(userId, updateOrderInput);
+  @Subscription(() => CookedOrdersOutput, {
+    name: COOKED_ORDERS,
+  })
+  @Roles(['DELIVERY'])
+  cookedOrders() {
+    return this.pubSub.asyncIterator(COOKED_ORDERS);
   }
 }
