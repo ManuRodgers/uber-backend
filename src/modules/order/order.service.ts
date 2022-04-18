@@ -9,6 +9,7 @@ import {
   PUB_SUB,
   PENDING_ORDERS,
   COOKED_ORDERS,
+  UPDATE_ORDERS,
 } from '../pub-sub/pub-sub.constants';
 
 import { Dish } from '../restaurant/entities/dish.entity';
@@ -31,6 +32,7 @@ import {
   PendingOrdersPayload,
 } from './dto/pending-orders.dto';
 import { UpdateOrderInput, UpdateOrderOutput } from './dto/update-order.dto';
+import { UpdateOrdersPayload } from './dto/update-orders.dto';
 import { Order, OrderStatus } from './entities/order.entity';
 
 @Injectable()
@@ -202,10 +204,6 @@ export class OrderService {
     try {
       const user = await this.userService.getUserById(userId);
       const order = await this.orderRepository.findOneBy({ id });
-      console.log(
-        '🚀 ~ file: order.service.ts ~ line 197 ~ OrderService ~ order',
-        order,
-      );
       if (!order) {
         throw new Error('Order not found');
       }
@@ -224,10 +222,6 @@ export class OrderService {
         status,
       });
       const newOrder = { ...order, status };
-      console.log(
-        '🚀 ~ file: order.service.ts ~ line 227 ~ OrderService ~ newOrder',
-        newOrder,
-      );
       if (user.role === UserRole.OWNER && status === OrderStatus.COOKED) {
         await this.pubSub.publish<CookedOrdersPayload>(COOKED_ORDERS, {
           [COOKED_ORDERS]: {
@@ -235,9 +229,14 @@ export class OrderService {
           },
         });
       }
+      await this.pubSub.publish<UpdateOrdersPayload>(UPDATE_ORDERS, {
+        [UPDATE_ORDERS]: {
+          order: newOrder,
+        },
+      });
       return {
         ok: true,
-        order,
+        order: newOrder,
       };
     } catch (error) {
       return {

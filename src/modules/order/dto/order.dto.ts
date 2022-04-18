@@ -4,7 +4,7 @@ import { CommonResponse } from 'src/common/CommonResponse';
 import { Order } from '../entities/order.entity';
 
 @InputType()
-export class OrderInput extends PickType(Order, ['id']) {}
+export class OrderInput extends PickType(Order, ['id'] as const) {}
 
 @ObjectType()
 export class OrderOutput extends CommonResponse {

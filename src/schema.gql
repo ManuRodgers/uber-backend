@@ -361,6 +361,7 @@ type SearchRestaurantOutput {
 type Subscription {
   cookedOrders: CookedOrdersOutput!
   pendingOrders: PendingOrdersOutPut!
+  updateOrders(updateOrdersInput: UpdateOrdersInput!): UpdateOrdersOutput!
 }
 
 """
@@ -392,6 +393,14 @@ input UpdateOrderInput {
 type UpdateOrderOutput {
   error: String
   ok: Boolean!
+  order: Order
+}
+
+input UpdateOrdersInput {
+  id: UUID!
+}
+
+type UpdateOrdersOutput {
   order: Order
 }
 

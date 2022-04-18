@@ -6,7 +6,7 @@ import { PendingOrdersOutPut } from './pending-orders.dto';
 @ObjectType()
 export class CookedOrdersOutput extends PickType(PendingOrdersOutPut, [
   'order',
-]) {}
+] as const) {}
 
 export class CookedOrdersPayload {
   [COOKED_ORDERS]?: CookedOrdersOutput;
