@@ -31,6 +31,7 @@ import {
   PendingOrdersOutPut,
   PendingOrdersPayload,
 } from './dto/pending-orders.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dto/take-order.dto';
 import { UpdateOrderInput, UpdateOrderOutput } from './dto/update-order.dto';
 import { UpdateOrdersPayload } from './dto/update-orders.dto';
 import { Order, OrderStatus } from './entities/order.entity';
@@ -229,6 +230,44 @@ export class OrderService {
           },
         });
       }
+      await this.pubSub.publish<UpdateOrdersPayload>(UPDATE_ORDERS, {
+        [UPDATE_ORDERS]: {
+          order: newOrder,
+        },
+      });
+      return {
+        ok: true,
+        order: newOrder,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
+      };
+    }
+  }
+
+  async takeOrder(
+    driverId: string,
+    { id }: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    try {
+      const order = await this.orderRepository.findOneBy({ id });
+      if (!order) {
+        throw new Error('Order not found');
+      }
+      if (order.status !== OrderStatus.COOKED) {
+        throw new Error('Order is not cooked yet by restaurant');
+      }
+      if (order.driver) {
+        throw new Error('Order already taken by other driver');
+      }
+      const driver = await this.userService.getUserById(driverId);
+      await this.orderRepository.save({
+        id,
+        driver,
+      });
+      const newOrder = { ...order, driver };
       await this.pubSub.publish<UpdateOrdersPayload>(UPDATE_ORDERS, {
         [UPDATE_ORDERS]: {
           order: newOrder,

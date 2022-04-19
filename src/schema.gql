@@ -185,6 +185,7 @@ type Mutation {
   logout: LogoutOutPut!
   refresh: RefreshOutput!
   register(registerInput: RegisterInput!): RegisterOutput!
+  takeOrder(takeOrderInput: TakeOrderInput!): TakeOrderOutput!
   updateDish(updateDishInput: UpdateDishInput!): UpdateDishOutput!
   updateOrder(updateOrderInput: UpdateOrderInput!): UpdateOrderOutput!
   updateRestaurant(updateRestaurantInput: UpdateRestaurantInput!): UpdateRestaurantOutput!
@@ -362,6 +363,16 @@ type Subscription {
   cookedOrders: CookedOrdersOutput!
   pendingOrders: PendingOrdersOutPut!
   updateOrders(updateOrdersInput: UpdateOrdersInput!): UpdateOrdersOutput!
+}
+
+input TakeOrderInput {
+  id: UUID!
+}
+
+type TakeOrderOutput {
+  error: String
+  ok: Boolean!
+  order: Order
 }
 
 """

@@ -18,6 +18,7 @@ import {
   PendingOrdersOutPut,
   PendingOrdersPayload,
 } from './dto/pending-orders.dto';
+import { TakeOrderOutput, TakeOrderInput } from './dto/take-order.dto';
 import { UpdateOrderInput, UpdateOrderOutput } from './dto/update-order.dto';
 import {
   UpdateOrdersInput,
@@ -115,5 +116,14 @@ export class OrderResolver {
   @Roles(['ANY'])
   updateOrders(@Args('updateOrdersInput') _: UpdateOrdersInput) {
     return this.pubSub.asyncIterator(UPDATE_ORDERS);
+  }
+
+  @Mutation(() => TakeOrderOutput)
+  @Roles(['DELIVERY'])
+  async takeOrder(
+    @CurrentUserId() driverId: string,
+    @Args('takeOrderInput') takeOrderInput: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    return this.orderService.takeOrder(driverId, takeOrderInput);
   }
 }
