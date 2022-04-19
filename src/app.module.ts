@@ -17,6 +17,7 @@ import { OrderModule } from './modules/order/order.module';
 import { CommonModule } from './common/common.module';
 import { PubSubModule } from './modules/pub-sub/pub-sub.module';
 import { JwtModule } from '@nestjs/jwt';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { JwtModule } from '@nestjs/jwt';
     OrderModule,
     CommonModule,
     PubSubModule,
+    PaymentModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtGuard },

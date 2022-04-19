@@ -77,6 +77,17 @@ type CreateOrderOutput {
   order: Order
 }
 
+input CreatePaymentInput {
+  restaurantId: String
+  transactionId: String!
+}
+
+type CreatePaymentOutput {
+  error: String
+  ok: Boolean!
+  payment: Payment
+}
+
 input CreateRestaurantInput {
   address: String!
   categoryName: String!
@@ -178,6 +189,7 @@ type LogoutOutPut {
 type Mutation {
   createDish(createDishInput: CreateDishInput!): CreateDishOutput!
   createOrder(createOrderInput: CreateOrderInput!): CreateOrderOutput!
+  createPayment(createPaymentInput: CreatePaymentInput!): CreatePaymentOutput!
   createRestaurant(createRestaurantInput: CreateRestaurantInput!): CreateRestaurantOutput!
   deleteDish(deleteDishInput: DeleteDishInput!): DeleteDishOutput!
   deleteRestaurant(deleteRestaurantInput: DeleteRestaurantInput!): DeleteRestaurantOutput!
@@ -255,6 +267,24 @@ type OrdersOutput {
   error: String
   ok: Boolean!
   orders: [Order!]
+}
+
+type Payment {
+  createdAt: DateTime!
+  deletedAt: DateTime
+  id: UUID!
+  restaurant: Restaurant!
+  restaurantId: String
+  transactionId: String!
+  updatedAt: DateTime!
+  user: User!
+}
+
+input PaymentInputType {
+  restaurant: RestaurantInputType!
+  restaurantId: String
+  transactionId: String!
+  user: UserInputType!
 }
 
 type PendingOrdersOutPut {
@@ -435,6 +465,7 @@ type User {
   email: EmailAddress!
   id: UUID!
   orders: [Order!]
+  payments: [Payment!]
   restaurants: [Restaurant!]
   rides: [Order!]
   role: UserRole!
@@ -445,6 +476,7 @@ type User {
 input UserInputType {
   email: EmailAddress!
   orders: [OrderInputType!]
+  payments: [PaymentInputType!]
   restaurants: [RestaurantInputType!]
   rides: [OrderInputType!]
   role: UserRole!

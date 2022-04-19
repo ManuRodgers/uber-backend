@@ -19,6 +19,7 @@ import { CommonEntity } from 'src/common/common.entity';
 import { Restaurant } from 'src/modules/restaurant/entities/restaurant.entity';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import { Order } from '../order/entities/order.entity';
+import { Payment } from '../payment/entities/payment.entity';
 
 export enum UserRole {
   CLIENT = 'CLIENT',
@@ -81,6 +82,14 @@ export class User extends CommonEntity {
     nullable: true,
   })
   rides?: Order[];
+
+  @Field(() => [Payment], { nullable: true })
+  @OneToMany(() => Payment, (payment) => payment.user, {
+    nullable: true,
+    cascade: true,
+    eager: true,
+  })
+  payments?: Payment[];
 
   @BeforeInsert()
   @BeforeUpdate()
