@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
-import { AuthGuard } from '@nestjs/passport';
-import { IS_PUBLIC_KEY } from 'src/decorators/public.decorator';
-import type { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { IS_PUBLIC_KEY } from 'src/decorators/public.decorator';
+
 import { JwtPayload } from '../dto/jwt-payload.dto';
 
+import type { Request } from 'express';
 @Injectable()
 export class JwtGuard implements CanActivate {
   constructor(
