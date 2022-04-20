@@ -1,6 +1,7 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -103,6 +104,7 @@ import { PaymentModule } from './modules/payment/payment.module';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/static',
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
     RestaurantModule,

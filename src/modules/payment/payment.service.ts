@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Cron, Interval } from '@nestjs/schedule';
+import { LessThan, Repository } from 'typeorm';
 import { Restaurant } from '../restaurant/entities/restaurant.entity';
-import { User } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import {
   CreatePaymentInput,
@@ -46,6 +46,11 @@ export class PaymentService {
           user: owner,
         }),
       );
+      restaurant.isPromoted = true;
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      restaurant.promotedUntil = date;
+      await this.restaurantRepository.save(restaurant);
       return {
         ok: true,
         payment,
@@ -55,6 +60,25 @@ export class PaymentService {
         ok: false,
         error,
       };
+    }
+  }
+
+  @Interval(2000)
+  private async checkPromotedRestaurants(): Promise<void> {
+    const restaurants = await this.restaurantRepository.find({
+      where: {
+        isPromoted: true,
+        promotedUntil: LessThan(new Date()),
+      },
+    });
+    console.log(
+      '🚀 ~ file: payment.service.ts ~ line 74 ~ PaymentService ~ checkPromotedRestaurants ~ restaurants',
+      restaurants,
+    );
+    for (const restaurant of restaurants) {
+      restaurant.isPromoted = false;
+      restaurant.promotedUntil = null;
+      await this.restaurantRepository.save(restaurant);
     }
   }
 }
